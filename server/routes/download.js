@@ -29,6 +29,13 @@ router.post('/', async (req, res) => {
     // Add user agent and headers to bypass some restrictions
     args.push('--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
     args.push('--add-header', 'Accept-Language:en-US,en;q=0.9');
+
+    // Cookies exportadas de Chrome (seal-cookies.txt): evitan el bloqueo de
+    // YouTube "Sign in to confirm you're not a bot". Se regeneran con:
+    //   yt-dlp --cookies-from-browser chrome --cookies seal-cookies.txt -e <url>
+    if (fs.existsSync(path.join(__dirname, '../../seal-cookies.txt'))) {
+      args.push('--cookies', path.join(__dirname, '../../seal-cookies.txt'));
+    }
     
     if (audioOnly) {
       args.push('-f', 'bestaudio/best');

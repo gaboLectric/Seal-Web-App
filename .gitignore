@@ -81,3 +81,6 @@ pids
 
 # El .env del cliente solo define el puerto del frontend (sin secretos)
 !client/.env
+
+# Sesión de YouTube exportada (no subir al repo)
+/seal-cookies.txt

@@ -1,6 +1,10 @@
 const express = require('express');
 const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
+
+const cookiesFile = path.join(__dirname, '../../seal-cookies.txt');
 
 // GET /api/info?url=<video_url> - Get video information
 router.get('/', async (req, res) => {
@@ -18,6 +22,8 @@ router.get('/', async (req, res) => {
     }
 
     const args = [
+      // Cookies exportadas de Chrome: evitan el bloqueo de YouTube anti-bot
+      ...(fs.existsSync(cookiesFile) ? ['--cookies', cookiesFile] : []),
       '--dump-json',
       '--no-playlist',
       url
