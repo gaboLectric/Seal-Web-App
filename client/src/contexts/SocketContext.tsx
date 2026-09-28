@@ -4,9 +4,13 @@ import { io, Socket } from 'socket.io-client';
 interface DownloadInfo {
   id: string;
   url: string;
-  status: 'starting' | 'downloading' | 'completed' | 'error';
+  status: 'starting' | 'downloading' | 'completed' | 'error' | 'cancelled';
   progress: number;
   filename: string;
+  totalSize?: string;
+  speed?: string;
+  eta?: string;
+  logLine?: string;
   error: string | null;
 }
 

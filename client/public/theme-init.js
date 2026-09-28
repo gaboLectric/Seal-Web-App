@@ -1,15 +1,14 @@
-// Decide el tema antes del primer pintado para evitar el destello blanco
-// en modo oscuro. Prioridad: preferencia guardada > ?theme= > apariencia del
-// sistema. App.tsx lo mantiene sincronizado a partir de aquí.
+// Decide el tema antes del primer pintado para evitar el destello.
+// Prioridad: preferencia guardada (light|dark|system) > apariencia del sistema.
 (function () {
   var stored = null;
   try {
     stored = localStorage.getItem('seal-theme');
   } catch (e) {}
-  var forced = new URLSearchParams(location.search).get('theme');
-  var pref = forced || stored;
-  var dark = pref
-    ? pref === 'dark'
-    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var pref = stored === 'light' || stored === 'dark' ? stored : 'system';
+  var dark =
+    pref === 'system'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : pref === 'dark';
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 })();

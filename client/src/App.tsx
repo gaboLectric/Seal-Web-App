@@ -1,76 +1,89 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline, Container, Box, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
 import DownloadForm from './components/DownloadForm';
-import DownloadProgress from './components/DownloadProgress';
 import DownloadHistory from './components/DownloadHistory';
 import { SocketProvider } from './contexts/SocketContext';
-import { lightTheme, darkTheme } from './theme';
+import { ToastProvider } from './contexts/ToastContext';
 import './App.css';
 
-// El tema inicial lo decidió theme-init.js antes del primer pintado;
-// localStorage guarda la preferencia manual del usuario (seal-theme).
-type Mode = 'light' | 'dark';
+export type ThemePref = 'light' | 'dark' | 'system';
+
+function readStoredPref(): ThemePref {
+  try {
+    const v = localStorage.getItem('seal-theme');
+    return v === 'light' || v === 'dark' ? v : 'system';
+  } catch {
+    return 'system';
+  }
+}
 
 function App() {
-  const [mode, setMode] = useState<Mode>(() =>
-    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
-  );
-
-  // Sin preferencia guardada, la app sigue la apariencia del sistema.
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = (e: MediaQueryListEvent) => {
-      if (!localStorage.getItem('seal-theme')) {
-        setMode(e.matches ? 'dark' : 'light');
-      }
-    };
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, []);
+  const [pref, setPref] = useState<ThemePref>(readStoredPref);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = mode;
-    document
-      .querySelectorAll('meta[name="theme-color"]')
-      .forEach((m) => m.setAttribute('content', mode === 'dark' ? '#000000' : '#F5F5F7'));
-  }, [mode]);
-
-  const toggleTheme = useCallback(() => {
-    const next: Mode = mode === 'dark' ? 'light' : 'dark';
-    setMode(next);
     try {
-      localStorage.setItem('seal-theme', next);
+      localStorage.setItem('seal-theme', pref);
     } catch {
       /* navegación privada */
     }
-  }, [mode]);
+  }, [pref]);
+
+  // Resuelve la preferencia (system sigue la apariencia del sistema en vivo)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = (systemDark: boolean) => {
+      const dark = pref === 'system' ? systemDark : pref === 'dark';
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      document
+        .querySelectorAll('meta[name="theme-color"]')
+        .forEach((m) => m.setAttribute('content', dark ? '#0c0e11' : '#faf9f5'));
+    };
+    apply(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => {
+      if (pref === 'system') apply(e.matches);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [pref]);
 
   return (
-    <ThemeProvider theme={mode === 'dark' ? darkTheme : lightTheme}>
-      <CssBaseline />
+    <ToastProvider>
       <SocketProvider>
         <div className="App">
-          <Header mode={mode} onToggleTheme={toggleTheme} />
-          <Container maxWidth={false} sx={{ maxWidth: 720, px: { xs: 2.5, sm: 3 } }}>
-            <Box component="main" sx={{ pt: { xs: 5, sm: 7 }, pb: 8 }}>
-              <Box sx={{ mb: { xs: 4, sm: 5 } }}>
-                <Typography variant="h1" component="h1">
-                  Descarga video y audio
-                </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 1, maxWidth: '52ch' }}>
-                  Pega un enlace de YouTube, TikTok, Instagram, Vimeo y cientos de sitios más.
-                </Typography>
-              </Box>
-              <DownloadForm />
-              <DownloadProgress />
-              <DownloadHistory />
-            </Box>
-          </Container>
+          <div className="bg-grid" aria-hidden />
+          <Header pref={pref} onPrefChange={setPref} />
+          <main className="site-main">
+            <div className="hero">
+              <p className="kicker">## audio &amp; video pipeline</p>
+              <h1>
+                Descarga video y audio<span className="dot">.</span>
+              </h1>
+              <p>
+                Pega una URL de YouTube, TikTok, Instagram o Vimeo. Extracción de metadatos
+                nativa, telemetría en vivo y biblioteca local.
+              </p>
+            </div>
+            <DownloadForm />
+            <DownloadHistory />
+            <footer className="site-footer">
+              <div>
+                <span className="amber">~/seal-pipeline</span> · backend yt-dlp + ffmpeg
+              </div>
+              <div>
+                <a
+                  href="https://github.com/gaboLectric/Seal-Web-App"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  repositorio
+                </a>
+                <span> · zero tracking</span>
+              </div>
+            </footer>
+          </main>
         </div>
       </SocketProvider>
-    </ThemeProvider>
+    </ToastProvider>
   );
 }
 
