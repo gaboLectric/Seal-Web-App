@@ -36,6 +36,16 @@ npm start
 
 Un solo proceso sirve todo (interfaz + API) en http://localhost:5001.
 
+## Servidor siempre activo (Mac)
+
+El servicio `com.gabolectric.seal` (LaunchAgent) arranca la app sola al encender la Mac y la reinicia si falla:
+
+```bash
+launchctl kickstart -k gui/501/com.gabolectric.seal   # reiniciar
+launchctl bootout gui/501/com.gabolectric.seal         # detener
+tail -f ~/Library/Logs/seal.log                        # ver registros
+```
+
 ## Usar desde el iPhone
 
 Con la Mac y el iPhone en la misma red WiFi:
