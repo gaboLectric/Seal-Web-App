@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Container, Box, Typography } from '@mui/material';
 import Header from './components/Header';
@@ -9,30 +9,42 @@ import { SocketProvider } from './contexts/SocketContext';
 import { lightTheme, darkTheme } from './theme';
 import './App.css';
 
-// El tema inicial ya lo decidió index.html antes del primer pintado (data-theme
-// en <html>); ?theme=dark|light en la URL fija el tema a mano.
+// El tema inicial lo decidió theme-init.js antes del primer pintado;
+// localStorage guarda la preferencia manual del usuario (seal-theme).
 type Mode = 'light' | 'dark';
-const forced = new URLSearchParams(window.location.search).get('theme');
-const initialMode: Mode =
-  forced === 'dark' || forced === 'light'
-    ? forced
-    : document.documentElement.dataset.theme === 'dark'
-      ? 'dark'
-      : 'light';
 
 function App() {
-  const [mode, setMode] = useState<Mode>(initialMode);
+  const [mode, setMode] = useState<Mode>(() =>
+    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+  );
 
+  // Sin preferencia guardada, la app sigue la apariencia del sistema.
   useEffect(() => {
-    if (forced) return; // el override manual no sigue al sistema
     const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = (e: MediaQueryListEvent) => setMode(e.matches ? 'dark' : 'light');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('seal-theme')) {
+        setMode(e.matches ? 'dark' : 'light');
+      }
+    };
     media.addEventListener('change', onChange);
     return () => media.removeEventListener('change', onChange);
   }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode;
+    document
+      .querySelectorAll('meta[name="theme-color"]')
+      .forEach((m) => m.setAttribute('content', mode === 'dark' ? '#000000' : '#F5F5F7'));
+  }, [mode]);
+
+  const toggleTheme = useCallback(() => {
+    const next: Mode = mode === 'dark' ? 'light' : 'dark';
+    setMode(next);
+    try {
+      localStorage.setItem('seal-theme', next);
+    } catch {
+      /* navegación privada */
+    }
   }, [mode]);
 
   return (
@@ -40,7 +52,7 @@ function App() {
       <CssBaseline />
       <SocketProvider>
         <div className="App">
-          <Header />
+          <Header mode={mode} onToggleTheme={toggleTheme} />
           <Container maxWidth={false} sx={{ maxWidth: 720, px: { xs: 2.5, sm: 3 } }}>
             <Box component="main" sx={{ pt: { xs: 5, sm: 7 }, pb: 8 }}>
               <Box sx={{ mb: { xs: 4, sm: 5 } }}>

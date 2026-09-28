@@ -164,6 +164,70 @@
   transition: width 0.25s ease-out;
 }
 
+/* Botón de tema claro/oscuro estilo macOS */
+.theme-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--hairline);
+  background: var(--fill);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--fill-strong);
+}
+
+.theme-toggle:active {
+  transform: scale(0.9);
+}
+
+.icon-pop {
+  display: flex;
+  animation: pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes pop {
+  from {
+    transform: rotate(-70deg) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* Botón principal con el degradado oceánico de la marca */
+.brand-button.MuiButton-containedPrimary {
+  background: var(--brand-grad);
+  color: #ffffff;
+}
+
+.brand-button.MuiButton-containedPrimary:hover {
+  background: var(--brand-grad);
+  filter: brightness(1.07);
+}
+
+.brand-button.MuiButton-containedPrimary:active {
+  filter: brightness(0.92);
+}
+
+/* La foca del estado vacío flota suavemente */
+.seal-float {
+  animation: float 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-5px);
+  }
+}
+
 /* Aparición suave de secciones al montar */
 .section-enter {
   animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;

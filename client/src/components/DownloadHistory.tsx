@@ -108,16 +108,30 @@ const DownloadHistory: React.FC = () => {
         <Box
           sx={{
             textAlign: 'center',
-            py: 6,
+            py: 5,
             borderRadius: '16px',
             border: '1.5px dashed var(--hairline-strong)',
           }}
         >
+          <Box
+            component="img"
+            src="/favicon.svg"
+            alt=""
+            className="seal-float"
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '15px',
+              boxShadow: '0 8px 20px rgba(10, 103, 232, 0.3)',
+              mb: 1.5,
+              display: 'inline-block',
+            }}
+          />
           <Typography variant="body2" sx={{ fontWeight: 590 }}>
             Aún no hay descargas
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-            Los archivos que descargues aparecerán aquí.
+            Pega un enlace arriba y la foca irá por él.
           </Typography>
         </Box>
       ) : (

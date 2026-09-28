@@ -250,6 +250,7 @@ const DownloadForm: React.FC = () => {
           </Box>
 
           <Button
+            className="brand-button"
             variant="contained"
             color="primary"
             size="large"
