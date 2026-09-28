@@ -38,7 +38,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   useEffect(() => {
     const serverUrl = process.env.NODE_ENV === 'production' 
       ? window.location.origin 
-      : 'http://localhost:5000';
+      : 'http://localhost:5001';
     
     const newSocket = io(serverUrl);
     setSocket(newSocket);

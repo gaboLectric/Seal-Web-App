@@ -10,17 +10,28 @@ const socketIo = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
+// La CSP no puede forzar HTTPS (upgrade-insecure-requests) porque la app corre
+// por HTTP en la red local; las miniaturas provienen de dominios externos.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'upgrade-insecure-requests': null,
+      'img-src': ["'self'", 'data:', 'https:'],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 const io = socketIo(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000'],
+    origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:4000'],
     methods: ['GET', 'POST']
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());

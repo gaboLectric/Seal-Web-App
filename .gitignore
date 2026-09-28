@@ -78,3 +78,6 @@ pids
 
 # Socket.io
 .socket.io/
+
+# El .env del cliente solo define el puerto del frontend (sin secretos)
+!client/.env

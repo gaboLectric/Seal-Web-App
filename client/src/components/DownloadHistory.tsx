@@ -1,22 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Chip,
-  Box,
-  Alert,
-  Tooltip
-} from '@mui/material';
-import {
-  Delete as DeleteIcon,
-  Refresh as RefreshIcon
-} from '@mui/icons-material';
+import { Box, Typography, IconButton, Tooltip } from '@mui/material';
+import { Delete as DeleteIcon, Download as SaveIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 interface DownloadedFile {
@@ -26,70 +10,26 @@ interface DownloadedFile {
   modifiedAt: string;
 }
 
+const apiUrl = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5001/api';
+
 const DownloadHistory: React.FC = () => {
   const [files, setFiles] = useState<DownloadedFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const apiUrl = process.env.NODE_ENV === 'production' 
-    ? '/api' 
-    : 'http://localhost:5000/api';
 
   const fetchFiles = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      // Mock data for development when backend is not available
-      if (process.env.NODE_ENV === 'development') {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Mock downloaded files data
-        const mockFiles = [
-          {
-            name: "Sample Video 1.mp4",
-            size: 15728640, // ~15MB
-            createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            modifiedAt: new Date(Date.now() - 86400000).toISOString()
-          },
-          {
-            name: "Audio Track.mp3",
-            size: 5242880, // ~5MB
-            createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-            modifiedAt: new Date(Date.now() - 172800000).toISOString()
-          },
-          {
-            name: "Tutorial Video.webm",
-            size: 25165824, // ~24MB
-            createdAt: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-            modifiedAt: new Date(Date.now() - 259200000).toISOString()
-          }
-        ];
-        
-        setFiles(mockFiles);
-        return;
-      }
-
       const response = await axios.get(`${apiUrl}/download/list`);
       setFiles(response.data);
     } catch (error: any) {
-      console.warn('Backend not available, using mock data');
-      // Fallback to mock data if backend is not available
-      const mockFiles = [
-        {
-          name: "Example Download.mp4",
-          size: 10485760, // ~10MB
-          createdAt: new Date().toISOString(),
-          modifiedAt: new Date().toISOString()
-        }
-      ];
-      setFiles(mockFiles);
-      setError(''); // Clear error since we're showing mock data
+      setError('No se pudo cargar el historial.');
     } finally {
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, []);
 
   useEffect(() => {
     fetchFiles();
@@ -100,116 +40,149 @@ const DownloadHistory: React.FC = () => {
       await axios.delete(`${apiUrl}/download/${encodeURIComponent(filename)}`);
       setFiles(files.filter(file => file.name !== filename));
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to delete file');
+      setError('No se pudo eliminar el archivo.');
     }
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    
+    if (bytes === 0) return '0 bytes';
+
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ['bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
+
+    if (diffDays === 0) return `hoy a las ${date.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}`;
+    if (diffDays === 1) return 'ayer';
+    if (diffDays < 7) return `hace ${diffDays} días`;
+    return date.toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const getFileType = (filename: string) => {
     const extension = filename.split('.').pop()?.toLowerCase();
-    
+
     if (['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm'].includes(extension || '')) {
       return 'video';
     }
     if (['mp3', 'm4a', 'wav', 'flac', 'ogg', 'aac'].includes(extension || '')) {
       return 'audio';
     }
-    return 'unknown';
-  };
-
-  const getFileTypeColor = (type: string) => {
-    switch (type) {
-      case 'video':
-        return 'primary';
-      case 'audio':
-        return 'secondary';
-      default:
-        return 'default';
-    }
+    return 'other';
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">
-            Download History
-          </Typography>
-          <Tooltip title="Refresh">
-            <IconButton onClick={fetchFiles} disabled={loading}>
-              <RefreshIcon />
+    <Box className="section-enter">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1.5 }}>
+        <Typography variant="h3" component="h2">
+          Historial
+        </Typography>
+        <Tooltip title="Actualizar">
+          <span>
+            <IconButton
+              size="small"
+              onClick={fetchFiles}
+              disabled={loading}
+              aria-label="Actualizar historial"
+              sx={{ color: 'var(--azure)', alignSelf: 'center' }}
+            >
+              <RefreshIcon sx={{ fontSize: 18 }} />
             </IconButton>
-          </Tooltip>
-        </Box>
+          </span>
+        </Tooltip>
+      </Box>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: '#FF3B30' }} role="alert">
+          {error}
+        </Typography>
+      )}
 
-        {files.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-            No downloaded files yet
+      {files.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 6,
+            borderRadius: '16px',
+            border: '1.5px dashed var(--hairline-strong)',
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 590 }}>
+            Aún no hay descargas
           </Typography>
-        ) : (
-          <List>
-            {files.map((file, index) => (
-              <ListItem key={index} divider={index < files.length - 1}>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body1" component="span">
-                        {file.name}
-                      </Typography>
-                      <Chip 
-                        label={getFileType(file.name)} 
-                        size="small" 
-                        color={getFileTypeColor(getFileType(file.name)) as any}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+            Los archivos que descargues aparecerán aquí.
+          </Typography>
+        </Box>
+      ) : (
+        <div className="inset-list">
+          {files.map((file) => {
+            const type = getFileType(file.name);
+            return (
+              <Box key={file.name} className="inset-row">
+                <Box className={`file-tile ${type === 'audio' ? 'audio' : type === 'video' ? 'video' : ''}`} aria-hidden>
+                  {type === 'audio' ? (
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                      <path
+                        d="M11.5 2.2v7.1a2.1 2.1 0 1 1-1.4-2V4.5L6 5.4v5.4a2.1 2.1 0 1 1-1.4-2V4.1l6.9-1.9Z"
+                        fill="#FFFFFF"
                       />
-                    </Box>
-                  }
-                  secondary={
-                    <Box>
-                      <Typography variant="caption" component="div">
-                        Size: {formatFileSize(file.size)}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        Downloaded: {formatDate(file.createdAt)}
-                      </Typography>
-                    </Box>
-                  }
-                />
-                <ListItemSecondaryAction>
-                  <Tooltip title="Delete">
-                    <IconButton 
-                      edge="end" 
-                      onClick={() => deleteFile(file.name)}
-                      color="error"
+                    </svg>
+                  ) : type === 'video' ? (
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M3.5 2.1v8.8L11 6.5 3.5 2.1Z" fill="#FFFFFF" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path d="M3 8.5V5.5h8v3H3Z" fill="#FFFFFF" />
+                    </svg>
+                  )}
+                </Box>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography variant="body2" noWrap sx={{ fontWeight: 590 }}>
+                    {file.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatFileSize(file.size)}, descargado {formatDate(file.createdAt)}
+                  </Typography>
+                </Box>
+                <Box className="row-action" sx={{ display: 'flex', flexShrink: 0 }}>
+                  {/* En iOS Safari, este enlace guarda el archivo en la app Archivos */}
+                  <Tooltip title="Guardar en este dispositivo">
+                    <a
+                      href={`${apiUrl}/download/file/${encodeURIComponent(file.name)}`}
+                      download={file.name}
+                      style={{ display: 'flex' }}
+                      aria-label={`Guardar ${file.name} en este dispositivo`}
                     >
-                      <DeleteIcon />
+                      <IconButton size="small" sx={{ color: 'var(--fog)', '&:hover': { color: 'var(--azure)' } }}>
+                        <SaveIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </a>
+                  </Tooltip>
+                  <Tooltip title="Eliminar">
+                    <IconButton
+                      size="small"
+                      onClick={() => deleteFile(file.name)}
+                      aria-label={`Eliminar ${file.name}`}
+                      sx={{ color: 'var(--fog)', '&:hover': { color: 'var(--red)', bgcolor: 'rgba(255, 59, 48, 0.1)' } }}
+                    >
+                      <DeleteIcon sx={{ fontSize: 18 }} />
                     </IconButton>
                   </Tooltip>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </CardContent>
-    </Card>
+                </Box>
+              </Box>
+            );
+          })}
+        </div>
+      )}
+    </Box>
   );
 };
 

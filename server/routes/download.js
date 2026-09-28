@@ -144,6 +144,30 @@ router.get('/list', async (req, res) => {
   }
 });
 
+// GET /api/download/file/:filename - Serve a downloaded file so other devices
+// (e.g., a phone on the same network) can save it
+router.get('/file/:filename', async (req, res) => {
+  try {
+    const downloadsDir = path.join(__dirname, '../../downloads');
+    const safeName = path.basename(req.params.filename);
+    const filePath = path.join(downloadsDir, safeName);
+
+    // Security check - ensure file is inside the downloads directory
+    if (!filePath.startsWith(downloadsDir + path.sep)) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
+
+    if (!(await fs.pathExists(filePath))) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    res.download(filePath, safeName);
+  } catch (error) {
+    console.error('Error serving file:', error);
+    res.status(500).json({ error: 'Failed to serve file' });
+  }
+});
+
 // DELETE /api/download/:filename - Delete a downloaded file
 router.delete('/:filename', async (req, res) => {
   try {

@@ -1,13 +1,85 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+  box-sizing: border-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Sistema de color estilo Apple. El tema lo fija data-theme en <html>
+   (index.html lo decide antes del primer pintado; App.tsx lo mantiene). */
+:root {
+  color-scheme: light;
+  --canvas: #F5F5F7;
+  --surface: #FFFFFF;
+  --ink: #1D1D1F;
+  --fog: #86868B;
+  --hairline: rgba(0, 0, 0, 0.08);
+  --hairline-strong: rgba(0, 0, 0, 0.14);
+  --card-border: rgba(0, 0, 0, 0.06);
+  --azure: #007AFF;
+  --azure-hover: #0071E3;
+  --green: #34C759;
+  --red: #FF3B30;
+  --gray-dot: #8E8E93;
+  --fill: rgba(120, 120, 128, 0.08);
+  --fill-strong: rgba(120, 120, 128, 0.18);
+  --bar-bg: rgba(255, 255, 255, 0.72);
+  --segment-track: rgba(120, 120, 128, 0.12);
+  --segment-thumb: #FFFFFF;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #000000;
+  --surface: #1C1C1E;
+  --ink: #F5F5F7;
+  --fog: #98989F;
+  --hairline: rgba(255, 255, 255, 0.14);
+  --hairline-strong: rgba(255, 255, 255, 0.24);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --azure: #0A84FF;
+  --azure-hover: #409CFF;
+  --green: #30D158;
+  --red: #FF453A;
+  --gray-dot: #98989F;
+  --fill: rgba(120, 120, 128, 0.24);
+  --fill-strong: rgba(120, 120, 128, 0.38);
+  --bar-bg: rgba(22, 22, 23, 0.72);
+  --segment-track: rgba(120, 120, 128, 0.24);
+  --segment-thumb: #636366;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+/* El foco de teclado es siempre visible, al estilo macOS */
+:focus-visible {
+  outline: 2px solid var(--azure);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(10, 132, 255, 0.35);
+}
+
+/* Respeta la preferencia del sistema de reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

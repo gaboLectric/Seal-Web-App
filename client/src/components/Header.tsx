@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Box,
-  Chip,
-  Alert
-} from '@mui/material';
-import { Download as DownloadIcon, CheckCircle as CheckCircleIcon, Warning as WarningIcon } from '@mui/icons-material';
+import { Box, Typography } from '@mui/material';
 import axios from 'axios';
+
+const apiUrl = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5001/api';
+
+// Ícono de app estilo iOS: cuadrado continuo con degradado azul y flecha de descarga.
+const AppIcon = () => (
+  <Box
+    aria-hidden
+    sx={{
+      width: 28,
+      height: 28,
+      borderRadius: '7px',
+      background: 'linear-gradient(180deg, #3B9BFF 0%, #0071E3 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 1px 2px rgba(0, 113, 227, 0.35)',
+    }}
+  >
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path
+        d="M7 1.5v7M3.8 5.7 7 8.9l3.2-3.2M2 12.5h10"
+        stroke="#FFFFFF"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </Box>
+);
 
 const Header: React.FC = () => {
   const [backendStatus, setBackendStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
@@ -16,7 +37,6 @@ const Header: React.FC = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const apiUrl = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api';
         await axios.get(`${apiUrl}/formats/quality-presets`);
         setBackendStatus('connected');
       } catch (error) {
@@ -25,47 +45,43 @@ const Header: React.FC = () => {
     };
 
     checkBackend();
-    // Check every 30 seconds
     const interval = setInterval(checkBackend, 30000);
     return () => clearInterval(interval);
   }, []);
 
+  const statusLabel =
+    backendStatus === 'connected' ? 'Conectado' : backendStatus === 'disconnected' ? 'Sin conexión' : 'Conectando…';
+  const statusColor =
+    backendStatus === 'connected'
+      ? 'var(--green)'
+      : backendStatus === 'disconnected'
+        ? 'var(--red)'
+        : 'var(--gray-dot)';
+
   return (
-    <>
-      <AppBar position="static" elevation={2}>
-        <Toolbar>
-          <DownloadIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Seal Web App
+    <header className="frosted-bar">
+      <Box sx={{ maxWidth: 720, mx: 'auto', px: { xs: 2.5, sm: 3 }, height: 56, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <AppIcon />
+        <Typography variant="h4" component="div" sx={{ flexGrow: 1, fontSize: '1.0625rem' }}>
+          Seal
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, title: statusLabel }}>
+          <Box
+            aria-hidden
+            sx={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              backgroundColor: statusColor,
+              boxShadow: backendStatus === 'connected' ? '0 0 0 3px rgba(52, 199, 89, 0.18)' : 'none',
+            }}
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+            {statusLabel}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip 
-              label="Video Downloader" 
-              variant="outlined" 
-              size="small"
-              sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}
-            />
-            <Chip 
-              label={backendStatus === 'connected' ? 'Online' : backendStatus === 'disconnected' ? 'Offline' : 'Checking...'}
-              color={backendStatus === 'connected' ? 'success' : backendStatus === 'disconnected' ? 'error' : 'default'}
-              size="small"
-              icon={backendStatus === 'connected' ? <CheckCircleIcon /> : backendStatus === 'disconnected' ? <WarningIcon /> : undefined}
-            />
-          </Box>
-        </Toolbar>
-      </AppBar>
-      
-      {backendStatus === 'disconnected' && (
-        <Alert 
-          severity="warning" 
-          sx={{ mb: 0, borderRadius: 0 }}
-        >
-          <strong>Backend Offline:</strong> Server not responding. Please ensure the backend server is running.
-          <br />
-          <strong>Setup:</strong> Run <code>npm run dev</code> in the root directory.
-        </Alert>
-      )}
-    </>
+        </Box>
+      </Box>
+    </header>
   );
 };
 

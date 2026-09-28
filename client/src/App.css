@@ -1,38 +1,181 @@
+/* Estilos globales de la app. Los colores vienen de las variables de index.css,
+   así cada clase se adapta sola al modo claro y oscuro. */
+
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* Barra translúcida estilo macOS: vidrio esmerilado fijo arriba */
+.frosted-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  background: var(--bar-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* Control segmentado estilo iOS con pulgar deslizante */
+.segmented {
+  position: relative;
+  display: inline-flex;
+  padding: 2px;
+  background: var(--segment-track);
+  border-radius: 9px;
+}
+
+.segmented-thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  width: calc(50% - 2px);
+  background: var(--segment-thumb);
+  border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.segmented-option {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-width: 96px;
+  padding: 5px 16px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 590;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 7px;
+  transition: color 0.15s ease;
+}
+
+.segmented-option.unselected {
+  color: var(--fog);
+  font-weight: 500;
+}
+
+/* Fila de lista agrupada estilo iOS: separador hairline sangrado */
+.inset-list {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.inset-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  position: relative;
+}
+
+.inset-row + .inset-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 60px;
+  right: 0;
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* Loseta de tipo de archivo estilo Files */
+.file-tile {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  color: #FFFFFF;
+  flex-shrink: 0;
 }
 
-.App-link {
-  color: #61dafb;
+.file-tile.video {
+  background: linear-gradient(180deg, #3B9BFF 0%, #0071E3 100%);
 }
 
-@keyframes App-logo-spin {
+.file-tile.audio {
+  background: linear-gradient(180deg, #C568F0 0%, #A933D4 100%);
+}
+
+/* Acciones de fila aparecen al pasar el cursor, como en Finder */
+.row-action {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.inset-row:hover .row-action,
+.inset-row:focus-within .row-action {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .row-action {
+    opacity: 1;
+  }
+}
+
+/* Píldoras de calidad seleccionables */
+.quality-pill {
+  padding: 6px 14px;
+  border-radius: 980px;
+  border: 1px solid var(--hairline-strong);
+  background: transparent;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 590;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.quality-pill:hover {
+  background: var(--fill);
+}
+
+.quality-pill.selected {
+  background: var(--azure);
+  border-color: var(--azure);
+  color: #FFFFFF;
+}
+
+/* Barra de progreso fina estilo Apple Music */
+.progress-track {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--fill-strong);
+  overflow: hidden;
+  flex: 1;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--azure);
+  transition: width 0.25s ease-out;
+}
+
+/* Aparición suave de secciones al montar */
+.section-enter {
+  animation: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes rise {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: translateY(6px);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: none;
   }
 }
